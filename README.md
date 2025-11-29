@@ -25,7 +25,7 @@
 
 ## Программные
 - Docker Desktop (Windows/macOS) или Docker Engine (Linux)
-- Драйвер NVIDIA
+- NVIDIA Driver
 - CUDA Toolkit (Linux / RED OS)
 
 ---
@@ -36,24 +36,22 @@
    https://www.docker.com/products/docker-desktop/
 
 2. При установке включить:
-   - **WSL2 backend**  
+   - **WSL2 backend**
    - **NVIDIA GPU Support**
 
-3. Перезагрузить компьютер.
+3. Перезагрузить ПК.
 
-Проверить успешную установку:
+### Проверить, что Docker установлен:
 
 ```bash
 docker --version
-3. Проверка доступа к GPU в Docker
-Выполните:
-
+Проверить доступ к GPU:
 bash
 Копировать код
 docker run --rm --gpus all nvidia/cuda:12.2.0-base-ubuntu22.04 nvidia-smi
-Если видна ваша RTX — GPU работает корректно.
+Если вы видите свою RTX — GPU работает корректно.
 
-4. Архитектура проекта
+3. Архитектура проекта
 scss
 Копировать код
 Пользователь (браузер → http://localhost:3000)
@@ -69,7 +67,7 @@ scss
                 │
                 ▼
             NVIDIA GPU
-5. docker-compose.yml
+4. docker-compose.yml
 Файл docker-compose.yml:
 
 yaml
@@ -101,7 +99,7 @@ services:
 volumes:
   ollama-data:
   open-webui-data:
-6. Запуск проекта
+5. Запуск проекта
 Перейти в каталог проекта:
 
 bash
@@ -122,8 +120,8 @@ docker ps
 arduino
 Копировать код
 http://localhost:3000
-7. Установка моделей Qwen2.5
-Перейти в контейнер Ollama:
+6. Установка моделей Qwen2.5
+Войти в контейнер:
 
 bash
 Копировать код
@@ -138,7 +136,7 @@ ollama pull qwen2.5:14b-instruct
 bash
 Копировать код
 ollama pull qwen2.5-coder:14b
-8. Характеристики моделей
+7. Характеристики моделей
 Qwen2.5:14B Instruct
 Параметры: 14.8B
 
@@ -146,9 +144,9 @@ Qwen2.5:14B Instruct
 
 Квантовка: Q4_K_M
 
-Размер модели: ≈ 9 GB
+Размер: ~9 GB
 
-VRAM при работе: ≈ 8–10 GB
+VRAM: 8–10 GB
 
 Назначение: диалоги, рассуждения, обучение
 
@@ -157,29 +155,29 @@ Qwen2.5:14B Coder
 
 Квантовка: Q4_K_M
 
-Размер: ≈ 9 GB
+Размер: ~9 GB
 
-VRAM: ≈ 8–10 GB
+VRAM: 8–10 GB
 
-Назначение: генерация и анализ кода
+Назначение: написание и анализ кода
 
-9. Квантовка (Q4_K_M)
+8. Квантовка (Q4_K_M)
 Формат	Битность	Память	Качество
 FP16	16-bit	Очень высокая	Максимальное
 INT8	8-bit	Высокая	Хорошее
-Q4_K_M	4-bit	Минимальная	Почти как FP16
+Q4_K_M	4-bit	Минимальная	Близко к FP16
 
-Q4_K_M — лучший баланс для RTX 4070/4080/4090.
+Q4_K_M — лучший вариант для RTX 4070/4080/4090.
 
-10. Выбор модели в Open WebUI
-В Model Selector выберите:
+9. Выбор модели в Open WebUI
+В выпадающем списке моделей выберите:
 
 qwen2.5:14b-instruct
 
 qwen2.5-coder:14b
 
-11. Рекомендуемый System Prompt (Coder)
-В Open WebUI → Параметры чата → System Prompt:
+10. Рекомендуемый System Prompt (Coder)
+Open WebUI → Параметры чата → System Prompt:
 
 Копировать код
 Ты — профессиональный AI-программист.
@@ -188,7 +186,7 @@ qwen2.5-coder:14b
 Если данных недостаточно — задаёшь уточняющие вопросы.
 Разделяешь код по файлам.
 Работаешь строго и технически грамотно.
-12. Управление контейнерами
+11. Управление контейнерами
 Остановить:
 
 bash
@@ -199,12 +197,12 @@ docker compose down
 bash
 Копировать код
 docker compose up -d
-Перезапуск:
+Перезапустить:
 
 bash
 Копировать код
 docker compose restart
-13. Дополнительные модели
+12. Дополнительные модели
 Лёгкая Instruct модель:
 
 bash
@@ -215,7 +213,7 @@ ollama pull qwen2.5:7b-instruct
 bash
 Копировать код
 ollama pull qwen2.5-coder:7b
-14. Установка на RED OS
+13. Установка на RED OS
 Установить Docker:
 
 bash
@@ -226,7 +224,7 @@ sudo dnf install docker
 bash
 Копировать код
 sudo nvidia-ctk runtime configure --runtime=docker
-Перезапустить Docker:
+Перезапуск Docker:
 
 bash
 Копировать код
@@ -238,15 +236,18 @@ bash
 sudo firewall-cmd --add-port=3000/tcp --permanent
 sudo firewall-cmd --add-port=11434/tcp --permanent
 sudo firewall-cmd --reload
-15. Credits
+14. Credits
 Проект создан на основе:
 
-Ollama — локальный движок LLM
-https://ollama.com/
+Ollama — https://ollama.com
 
-Open WebUI — frontend для LLM
-https://github.com/open-webui/open-webui
+Open WebUI — https://github.com/open-webui/open-webui
 
-16. Лицензия
+15. Лицензия
 Распространяется по лицензии MIT.
 Полный текст — в файле LICENSE.
+
+yaml
+Копировать код
+
+---
