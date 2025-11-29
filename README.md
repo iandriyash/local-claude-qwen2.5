@@ -17,20 +17,22 @@
 
 ---
 
-# 1. Требования
+## 1. Требования
 
-## Аппаратные
+### Аппаратные
+
 - NVIDIA GPU от **12–16 GB VRAM**
 - Рекомендуемые модели: **RTX 4070 / 4080 / 4090**
 
-## Программные
+### Программные
+
 - Docker Desktop (Windows/macOS) или Docker Engine (Linux)
 - NVIDIA Driver
 - CUDA Toolkit (Linux / RED OS)
 
 ---
 
-# 2. Установка Docker (Windows)
+## 2. Установка Docker (Windows)
 
 1. Скачать Docker Desktop:  
    https://www.docker.com/products/docker-desktop/
@@ -45,15 +47,21 @@
 
 ```bash
 docker --version
-Проверить доступ к GPU:
-bash
-Копировать код
-docker run --rm --gpus all nvidia/cuda:12.2.0-base-ubuntu22.04 nvidia-smi
-Если вы видите свою RTX — GPU работает корректно.
+```
 
-3. Архитектура проекта
-scss
-Копировать код
+### Проверить доступ к GPU:
+
+```bash
+docker run --rm --gpus all nvidia/cuda:12.2.0-base-ubuntu22.04 nvidia-smi
+```
+
+> Если вы видите свою RTX — GPU работает корректно.
+
+---
+
+## 3. Архитектура проекта
+
+```
 Пользователь (браузер → http://localhost:3000)
                 │
                 ▼
@@ -67,11 +75,15 @@ scss
                 │
                 ▼
             NVIDIA GPU
-4. docker-compose.yml
-Файл docker-compose.yml:
+```
 
-yaml
-Копировать код
+---
+
+## 4. docker-compose.yml
+
+Файл `docker-compose.yml`:
+
+```yaml
 services:
   ollama:
     image: ollama/ollama:latest
@@ -81,7 +93,13 @@ services:
       - "11434:11434"
     volumes:
       - ollama-data:/root/.ollama
-    gpus: all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
@@ -99,152 +117,199 @@ services:
 volumes:
   ollama-data:
   open-webui-data:
-5. Запуск проекта
+```
+
+---
+
+## 5. Запуск проекта
+
 Перейти в каталог проекта:
 
-bash
-Копировать код
+```bash
 cd local-claude-qwen2.5
+```
+
 Запустить сервисы:
 
-bash
-Копировать код
+```bash
 docker compose up -d
+```
+
 Проверить:
 
-bash
-Копировать код
+```bash
 docker ps
+```
+
 Открыть интерфейс:
 
-arduino
-Копировать код
+```
 http://localhost:3000
-6. Установка моделей Qwen2.5
+```
+
+---
+
+## 6. Установка моделей Qwen2.5
+
 Войти в контейнер:
 
-bash
-Копировать код
+```bash
 docker exec -it ollama bash
+```
+
 Установить основную модель:
 
-bash
-Копировать код
+```bash
 ollama pull qwen2.5:14b-instruct
+```
+
 Установить модель для программирования:
 
-bash
-Копировать код
+```bash
 ollama pull qwen2.5-coder:14b
-7. Характеристики моделей
-Qwen2.5:14B Instruct
-Параметры: 14.8B
+```
 
-Контекст: 32768 токенов
+---
 
-Квантовка: Q4_K_M
+## 7. Характеристики моделей
 
-Размер: ~9 GB
+### Qwen2.5:14B Instruct
 
-VRAM: 8–10 GB
+| Параметр | Значение |
+|----------|----------|
+| Параметры | 14.8B |
+| Контекст | 32768 токенов |
+| Квантовка | Q4_K_M |
+| Размер | ~9 GB |
+| VRAM | 8–10 GB |
+| Назначение | диалоги, рассуждения, обучение |
 
-Назначение: диалоги, рассуждения, обучение
+### Qwen2.5:14B Coder
 
-Qwen2.5:14B Coder
-Параметры: 14.8B
+| Параметр | Значение |
+|----------|----------|
+| Параметры | 14.8B |
+| Квантовка | Q4_K_M |
+| Размер | ~9 GB |
+| VRAM | 8–10 GB |
+| Назначение | написание и анализ кода |
 
-Квантовка: Q4_K_M
+---
 
-Размер: ~9 GB
+## 8. Квантовка (Q4_K_M)
 
-VRAM: 8–10 GB
+| Формат | Битность | Память | Качество |
+|--------|----------|--------|----------|
+| FP16 | 16-bit | Очень высокая | Максимальное |
+| INT8 | 8-bit | Высокая | Хорошее |
+| Q4_K_M | 4-bit | Минимальная | Близко к FP16 |
 
-Назначение: написание и анализ кода
+> **Q4_K_M** — лучший вариант для RTX 4070/4080/4090.
 
-8. Квантовка (Q4_K_M)
-Формат	Битность	Память	Качество
-FP16	16-bit	Очень высокая	Максимальное
-INT8	8-bit	Высокая	Хорошее
-Q4_K_M	4-bit	Минимальная	Близко к FP16
+---
 
-Q4_K_M — лучший вариант для RTX 4070/4080/4090.
+## 9. Выбор модели в Open WebUI
 
-9. Выбор модели в Open WebUI
 В выпадающем списке моделей выберите:
 
-qwen2.5:14b-instruct
+- `qwen2.5:14b-instruct`
+- `qwen2.5-coder:14b`
 
-qwen2.5-coder:14b
+---
 
-10. Рекомендуемый System Prompt (Coder)
-Open WebUI → Параметры чата → System Prompt:
+## 10. Рекомендуемый System Prompt (Coder)
 
-Копировать код
+**Open WebUI → Параметры чата → System Prompt:**
+
+```
 Ты — профессиональный AI-программист.
 Пишешь структурированный и компилируемый код.
 Не придумываешь несуществующих библиотек.
 Если данных недостаточно — задаёшь уточняющие вопросы.
 Разделяешь код по файлам.
 Работаешь строго и технически грамотно.
-11. Управление контейнерами
+```
+
+---
+
+## 11. Управление контейнерами
+
 Остановить:
 
-bash
-Копировать код
+```bash
 docker compose down
+```
+
 Запустить:
 
-bash
-Копировать код
+```bash
 docker compose up -d
+```
+
 Перезапустить:
 
-bash
-Копировать код
+```bash
 docker compose restart
-12. Дополнительные модели
+```
+
+---
+
+## 12. Дополнительные модели
+
 Лёгкая Instruct модель:
 
-bash
-Копировать код
+```bash
 ollama pull qwen2.5:7b-instruct
+```
+
 Лёгкий Coder:
 
-bash
-Копировать код
+```bash
 ollama pull qwen2.5-coder:7b
-13. Установка на RED OS
+```
+
+---
+
+## 13. Установка на RED OS
+
 Установить Docker:
 
-bash
-Копировать код
+```bash
 sudo dnf install docker
+```
+
 Настроить NVIDIA Runtime:
 
-bash
-Копировать код
+```bash
 sudo nvidia-ctk runtime configure --runtime=docker
+```
+
 Перезапуск Docker:
 
-bash
-Копировать код
+```bash
 sudo systemctl restart docker
+```
+
 Разрешить порты:
 
-bash
-Копировать код
+```bash
 sudo firewall-cmd --add-port=3000/tcp --permanent
 sudo firewall-cmd --add-port=11434/tcp --permanent
 sudo firewall-cmd --reload
-14. Credits
+```
+
+---
+
+## 14. Credits
+
 Проект создан на основе:
 
-Ollama — https://ollama.com
+- [Ollama](https://ollama.com)
+- [Open WebUI](https://github.com/open-webui/open-webui)
 
-Open WebUI — https://github.com/open-webui/open-webui
+---
 
-15. Лицензия
-Распространяется по лицензии MIT.
-Полный текст — в файле LICENSE.
+## 15. Лицензия
 
-
+Распространяется по лицензии **MIT**.  
+Полный текст — в файле [LICENSE](LICENSE).
