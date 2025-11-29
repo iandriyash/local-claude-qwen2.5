@@ -6,8 +6,8 @@
 ![Models](https://img.shields.io/badge/Models-Qwen2.5%2014B%20%7C%20Coder%2014B-orange.svg)
 [![Powered by Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-lightgrey.svg)](https://ollama.com/)
 
-Простая и удобная локальная среда для запуска больших языковых моделей (LLM)  
-Qwen2.5 полностью офлайн — через **Ollama** и **Open WebUI** с поддержкой **NVIDIA GPU**.
+Простая и удобная локальная среда для запуска моделей **Qwen2.5** (Instruct и Coder)  
+полностью офлайн — через **Ollama** и **Open WebUI**, с использованием **NVIDIA GPU**.
 
 ---
 
@@ -20,13 +20,13 @@ Qwen2.5 полностью офлайн — через **Ollama** и **Open WebU
 # 1. Требования
 
 ## Аппаратные
-- NVIDIA GPU (от 12–16 GB VRAM)
-- Рекомендуемые карты: **RTX 4070 / 4080 / 4090**
+- NVIDIA GPU от **12–16 GB VRAM**
+- Рекомендуемые модели: **RTX 4070 / 4080 / 4090**
 
 ## Программные
 - Docker Desktop (Windows/macOS) или Docker Engine (Linux)
 - Драйвер NVIDIA
-- Для Linux / RED OS: установленная CUDA
+- CUDA Toolkit (Linux / RED OS)
 
 ---
 
@@ -36,290 +36,217 @@ Qwen2.5 полностью офлайн — через **Ollama** и **Open WebU
    https://www.docker.com/products/docker-desktop/
 
 2. При установке включить:
-   - WSL2 backend  
-   - NVIDIA GPU support  
+   - **WSL2 backend**  
+   - **NVIDIA GPU Support**
 
-3. Перезагрузить ПК.
+3. Перезагрузить компьютер.
 
-4. Проверить:
+Проверить успешную установку:
 
+```bash
 docker --version
+3. Проверка доступа к GPU в Docker
+Выполните:
 
-yaml
+bash
 Копировать код
-
----
-
-# 3. Проверка доступа к GPU
-
-Выполнить команду:
-
 docker run --rm --gpus all nvidia/cuda:12.2.0-base-ubuntu22.04 nvidia-smi
+Если видна ваша RTX — GPU работает корректно.
+
+4. Архитектура проекта
+scss
+Копировать код
+Пользователь (браузер → http://localhost:3000)
+                │
+                ▼
+            Open WebUI
+                │
+                ▼
+               Ollama
+                │
+                ▼
+ Qwen2.5 Models (14B Instruct / 14B Coder)
+                │
+                ▼
+            NVIDIA GPU
+5. docker-compose.yml
+Файл docker-compose.yml:
 
 yaml
 Копировать код
-
-Если видна ваша RTX-видеокарта — GPU доступна Docker.
-
----
-
-# 4. Архитектура проекта
-
-Пользователь (браузер: http://localhost:3000)
-│
-▼
-Open WebUI
-│
-▼
-Ollama
-│
-▼
-Модели Qwen2.5 (14B Instruct / 14B Coder)
-│
-▼
-NVIDIA GPU
-
-yaml
-Копировать код
-
----
-
-# 5. docker-compose.yml
-
-Файл `docker-compose.yml`:
-
 services:
-ollama:
-image: ollama/ollama:latest
-container_name: ollama
-restart: unless-stopped
-ports:
-- "11434:11434"
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    gpus: all
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    depends_on:
+      - ollama
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - open-webui-data:/app/backend/data
+
 volumes:
-- ollama-data:/root/.ollama
-gpus: all
-
-open-webui:
-image: ghcr.io/open-webui/open-webui:main
-container_name: open-webui
-restart: unless-stopped
-depends_on:
-- ollama
-ports:
-- "3000:8080"
-environment:
-- OLLAMA_BASE_URL=http://ollama:11434
-volumes:
-- open-webui-data:/app/backend/data
-
-volumes:
-ollama-data:
-open-webui-data:
-
-yaml
-Копировать код
-
----
-
-# 6. Запуск
-
+  ollama-data:
+  open-webui-data:
+6. Запуск проекта
 Перейти в каталог проекта:
 
-cd local-claude-qwen2.5
-
+bash
 Копировать код
-
+cd local-claude-qwen2.5
 Запустить сервисы:
 
-docker compose up -d
-
-makefile
+bash
 Копировать код
-
+docker compose up -d
 Проверить:
 
-docker ps
-
+bash
 Копировать код
-
+docker ps
 Открыть интерфейс:
 
+arduino
+Копировать код
 http://localhost:3000
+7. Установка моделей Qwen2.5
+Перейти в контейнер Ollama:
 
-yaml
+bash
 Копировать код
-
----
-
-# 7. Установка моделей Qwen2.5
-
-Войти в контейнер:
-
 docker exec -it ollama bash
+Установить основную модель:
 
+bash
 Копировать код
-
-Основная модель:
-
 ollama pull qwen2.5:14b-instruct
+Установить модель для программирования:
 
+bash
 Копировать код
-
-Модель для программирования:
-
 ollama pull qwen2.5-coder:14b
+8. Характеристики моделей
+Qwen2.5:14B Instruct
+Параметры: 14.8B
 
-yaml
+Контекст: 32768 токенов
+
+Квантовка: Q4_K_M
+
+Размер модели: ≈ 9 GB
+
+VRAM при работе: ≈ 8–10 GB
+
+Назначение: диалоги, рассуждения, обучение
+
+Qwen2.5:14B Coder
+Параметры: 14.8B
+
+Квантовка: Q4_K_M
+
+Размер: ≈ 9 GB
+
+VRAM: ≈ 8–10 GB
+
+Назначение: генерация и анализ кода
+
+9. Квантовка (Q4_K_M)
+Формат	Битность	Память	Качество
+FP16	16-bit	Очень высокая	Максимальное
+INT8	8-bit	Высокая	Хорошее
+Q4_K_M	4-bit	Минимальная	Почти как FP16
+
+Q4_K_M — лучший баланс для RTX 4070/4080/4090.
+
+10. Выбор модели в Open WebUI
+В Model Selector выберите:
+
+qwen2.5:14b-instruct
+
+qwen2.5-coder:14b
+
+11. Рекомендуемый System Prompt (Coder)
+В Open WebUI → Параметры чата → System Prompt:
+
 Копировать код
-
----
-
-# 8. Характеристики моделей
-
-## Qwen2.5:14B Instruct
-- Параметры: **14.8B**
-- Контекст: **32768 токенов**
-- Квантовка: **Q4_K_M**
-- Размер: **≈9 GB**
-- Использование VRAM: **≈8–10 GB**
-- Назначение: диалоги, анализ, обучение, проекты
-
-## Qwen2.5:14B Coder
-- Параметры: **14.8B**
-- Квантовка: **Q4_K_M**
-- Размер: **≈9 GB**
-- Использование VRAM: **≈8–10 GB**
-- Назначение: генерация кода, анализ, работа с проектами
-
----
-
-# 9. Квантовка (4-bit)
-
-Квантовка уменьшает разрядность чисел модели → снижает VRAM.
-
-| Формат | Битность | Память | Качество |
-|--------|----------|---------|----------|
-| FP16   | 16-bit  | очень высокое | максимальное |
-| INT8   | 8-bit   | высокое | хорошее |
-| **Q4_K_M** | **4-bit** | **низкое** | почти FP16 |
-
-Q4_K_M — оптимальный вариант для NVIDIA 12–16 GB VRAM.
-
----
-
-# 10. Выбор модели в Open WebUI
-
-В интерфейсе выберите:
-
-- **qwen2.5:14b-instruct** — основной ассистент  
-- **qwen2.5-coder:14b** — помощник по программированию  
-
----
-
-# 11. System Prompt (для Qwen2.5-Coder)
-
-Открыть чат → System Prompt:
-
 Ты — профессиональный AI-программист.
 Пишешь структурированный и компилируемый код.
-Не придумываешь несуществующих классов и библиотек.
+Не придумываешь несуществующих библиотек.
 Если данных недостаточно — задаёшь уточняющие вопросы.
 Разделяешь код по файлам.
 Работаешь строго и технически грамотно.
-
-yaml
-Копировать код
-
----
-
-# 12. Управление контейнерами
-
+12. Управление контейнерами
 Остановить:
 
-docker compose down
-
-makefile
+bash
 Копировать код
-
+docker compose down
 Запустить:
 
-docker compose up -d
-
-makefile
+bash
 Копировать код
-
+docker compose up -d
 Перезапуск:
 
+bash
+Копировать код
 docker compose restart
+13. Дополнительные модели
+Лёгкая Instruct модель:
 
-yaml
+bash
 Копировать код
-
----
-
-# 13. Дополнительные модели
-
-Лёгкая Instruct-модель:
-
 ollama pull qwen2.5:7b-instruct
+Лёгкий Coder:
 
+bash
 Копировать код
-
-Лёгкая Coder-модель:
-
 ollama pull qwen2.5-coder:7b
-
-yaml
-Копировать код
-
----
-
-# 14. Установка на RED OS
-
+14. Установка на RED OS
 Установить Docker:
 
+bash
+Копировать код
 sudo dnf install docker
+Настроить NVIDIA Runtime:
 
-yaml
+bash
 Копировать код
-
-Включить NVIDIA runtime:
-
 sudo nvidia-ctk runtime configure --runtime=docker
-
-yaml
-Копировать код
-
 Перезапустить Docker:
 
-sudo systemctl restart docker
-
+bash
 Копировать код
+sudo systemctl restart docker
+Разрешить порты:
 
-Открыть порты:
-
+bash
+Копировать код
 sudo firewall-cmd --add-port=3000/tcp --permanent
 sudo firewall-cmd --add-port=11434/tcp --permanent
 sudo firewall-cmd --reload
+15. Credits
+Проект создан на основе:
 
-yaml
-Копировать код
+Ollama — локальный движок LLM
+https://ollama.com/
 
----
+Open WebUI — frontend для LLM
+https://github.com/open-webui/open-webui
 
-# 15. Credits
-
-Проект основан на следующих open-source инструментах:
-
-- **Ollama** — локальный движок для LLM  
-  https://ollama.com/
-
-- **Open WebUI** — удобный веб-интерфейс  
-  https://github.com/open-webui/open-webui
-
----
-
-# 16. Лицензия
-
-Проект распространяется по лицензии MIT.  
-Полный текст — в файле **LICENSE**.
+16. Лицензия
+Распространяется по лицензии MIT.
+Полный текст — в файле LICENSE.
