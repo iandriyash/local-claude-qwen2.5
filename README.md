@@ -247,7 +247,4 @@ Open WebUI — https://github.com/open-webui/open-webui
 Распространяется по лицензии MIT.
 Полный текст — в файле LICENSE.
 
-yaml
-Копировать код
 
----
